@@ -1,1 +1,109 @@
-                        <h2>1. Termos</h2> <p>Ao acessar ao site <a href='https://synio.com.br'>synio</a>, concorda em cumprir estes <a href=https://privacidade.me/ target='_BLANK' style='color: #727496; text-decoration: none;' >termos de uso</a>, todas as leis e regulamentos aplicáveis ​​e concorda que é responsável pelo cumprimento de todas as leis locais aplicáveis. Se você não concordar com algum desses termos, está proibido de usar ou acessar este site. Os materiais contidos neste site são protegidos pelas leis de direitos autorais e marcas comerciais aplicáveis.</p> <h2>2. Uso de Licença</h2> <p>É concedida permissão para baixar temporariamente uma cópia dos materiais (informações ou software) no site synio , apenas para visualização transitória pessoal e não comercial. Esta é a concessão de uma licença, não uma transferência de título e, sob esta licença, você não pode: </p> <ol> <li>modificar ou copiar os materiais;  </li> <li>usar os materiais para qualquer finalidade comercial ou para exibição pública (comercial ou não comercial);  </li> <li>tentar descompilar ou fazer engenharia reversa de qualquer software contido no site synio;  </li> <li>remover quaisquer direitos autorais ou outras notações de propriedade dos materiais; ou  </li> <li>transferir os materiais para outra pessoa ou 'espelhe' os materiais em qualquer outro servidor.</li> </ol> <p>Esta licença será automaticamente rescindida se você violar alguma dessas restrições e poderá ser rescindida por synio a qualquer momento. Ao encerrar a visualização desses materiais ou após o término desta licença, você deve apagar todos os materiais baixados em sua posse, seja em formato eletrónico ou impresso.</p> <h2>3. Isenção de responsabilidade</h2> <ol> <li>Os materiais no site da synio são fornecidos 'como estão'. synio não oferece garantias, expressas ou implícitas, e, por este meio, isenta e nega todas as outras garantias, incluindo, sem limitação, garantias implícitas ou condições de comercialização, adequação a um fim específico ou não violação de propriedade intelectual ou outra violação de direitos. </li> <li>Além disso, o synio não garante ou faz qualquer representação relativa à precisão, aos resultados prováveis ​​ou à confiabilidade do uso dos materiais em seu site ou de outra forma relacionado a esses materiais ou em sites vinculados a este site.</li> </ol> <h2>4. Limitações</h2> <p>Em nenhum caso o synio ou seus fornecedores serão responsáveis ​​por quaisquer danos (incluindo, sem limitação, danos por perda de dados ou lucro ou devido a interrupção dos negócios) decorrentes do uso ou da incapacidade de usar os materiais em synio, mesmo que synio ou um representante autorizado da synio tenha sido notificado oralmente ou por escrito da possibilidade de tais danos. Como algumas jurisdições não permitem limitações em garantias implícitas, ou limitações de responsabilidade por danos conseqüentes ou incidentais, essas limitações podem não se aplicar a você.</p> <h2>5. Precisão dos materiais</h2> <p>Os materiais exibidos no site da synio podem incluir erros técnicos, tipográficos ou fotográficos. synio não garante que qualquer material em seu site seja preciso, completo ou atual. synio pode fazer alterações nos materiais contidos em seu site a qualquer momento, sem aviso prévio. No entanto, synio não se compromete a atualizar os materiais.</p> <h2>6. Links</h2> <p>O synio não analisou todos os sites vinculados ao seu site e não é responsável pelo conteúdo de nenhum site vinculado. A inclusão de qualquer link não implica endosso por synio do site. O uso de qualquer site vinculado é por conta e risco do usuário.</p> </p> <h3>Modificações</h3> <p>O synio pode revisar estes termos de serviço do site a qualquer momento, sem aviso prévio. Ao usar este site, você concorda em ficar vinculado à versão atual desses termos de serviço.</p> <h3>Lei aplicável</h3> <p>Estes termos e condições são regidos e interpretados de acordo com as leis do synio e você se submete irrevogavelmente à jurisdição exclusiva dos tribunais naquele estado ou localidade.</p>                     
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Redirecionando...</title>
+  <style>
+    body {
+      background-color: #000000; /* Fundo preto */
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    h1 {
+      font-size: 18px;
+      color: #FFFFFF; /* Texto branco */
+      margin-bottom: 20px;
+    }
+    .loading {
+      animation: rotate 1s linear infinite;
+      border: 5px solid #4F4F4F; /* Cinza escuro */
+      border-top: 5px solid #00FF00; /* Parte superior em verde */
+      border-radius: 50%;
+      height: 50px;
+      width: 50px;
+    }
+    @keyframes rotate {
+      0% {
+        transform: rotate(0);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+  <script>
+    // Função para fazer a requisição ao webhook do n8n
+    async function obterNumeros() {
+      try {
+        console.log('Iniciando requisição ao webhook...');
+        const response = await fetch('URLN8NWEBHOOK', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        console.log('Resposta recebida do webhook:', response);
+        if (!response.ok) {
+          throw new Error('Erro na requisição ao webhook');
+        }
+        const data = await response.json();
+        console.log('Dados recebidos do webhook:', data);
+        return data.numbers;
+      } catch (error) {
+        console.error('Erro ao obter os números do webhook:', error);
+        throw error;
+      }
+    }
+
+    // Função para redirecionar para um grupo de WhatsApp aleatório
+    async function redirecionar() {
+      try {
+        const numeros = await obterNumeros();
+        const numeroAleatorio = numeros[Math.floor(Math.random() * numeros.length)];
+        const url = `https://api.whatsapp.com/send?phone=${numeroAleatorio}&text=Oi,%20quero%20conversar%20com%20voce!`;
+        console.log('Redirecionando para:', url);
+        window.location.href = url;
+      } catch (error) {
+        console.error('Erro ao obter os números ou redirecionar:', error);
+        // URL de fallback em caso de erro
+        window.location.href = 'https://wa.me/5522998542416?text=oi%20tudo%20bem%20gata';
+      }
+    }
+
+   </script>
+  <!-- Pixel do Facebook -->
+  <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', 'SEUPIXEL');
+    fbq('track', 'Pageview');
+  </script>
+
+</head>
+<body onload="redirecionar(); enviarPixel();">
+  <div class="loading-container">
+    <h1>Aguarde um momento por favor...</h1>
+    <div class="loading"></div>
+  </div>
+</body>
+</html>
