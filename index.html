@@ -46,45 +46,37 @@
     }
   </style>
   <script>
-    // Função para fazer a requisição ao webhook do n8n
-    async function obterNumeros() {
+    // Array com os números para redirecionamento aleatório
+    const numeros = ['5522998542416', '5522981706844', '5522999111922'];
+    
+    // Função para redirecionar para um número de WhatsApp aleatório
+    function redirecionar() {
       try {
-        console.log('Iniciando requisição ao webhook...');
-        const response = await fetch('https://weebhooks.synio.com.br/webhook/pressel', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-        console.log('Resposta recebida do webhook:', response);
-        if (!response.ok) {
-          throw new Error('Erro na requisição ao webhook');
-        }
-        const data = await response.json();
-        console.log('Dados recebidos do webhook:', data);
-        return data.numbers;
-      } catch (error) {
-        console.error('Erro ao obter os números do webhook:', error);
-        throw error;
-      }
-    }
-
-    // Função para redirecionar para um grupo de WhatsApp aleatório
-    async function redirecionar() {
-      try {
-        const numeros = await obterNumeros();
+        // Seleciona um número aleatório do array
         const numeroAleatorio = numeros[Math.floor(Math.random() * numeros.length)];
+        
+        // Constrói a URL de redirecionamento usando o formato exato do código original
         const url = `https://api.whatsapp.com/send?phone=${numeroAleatorio}&text=Oi,%20quero%20conversar%20com%20voce!`;
-        console.log('Redirecionando para:', url);
+        
+        // Redireciona imediatamente
         window.location.href = url;
       } catch (error) {
-        console.error('Erro ao obter os números ou redirecionar:', error);
-        // URL de fallback em caso de erro
+        // URL de fallback em caso de erro (usando o formato exato do original)
         window.location.href = 'https://wa.me/5522998542416?text=oi%20tudo%20bem%20gata';
       }
     }
 
-   </script>
+    // Execute o redirecionamento imediatamente após o carregamento do script
+    document.addEventListener('DOMContentLoaded', function() {
+      // Rastrear visualização de página antes do redirecionamento
+      if (typeof fbq === 'function') {
+        fbq('track', 'PageView');
+      }
+      
+      // Redirecionar imediatamente
+      redirecionar();
+    });
+  </script>
   <!-- Pixel do Facebook -->
   <script>
     !function(f,b,e,v,n,t,s)
@@ -98,9 +90,8 @@
     fbq('init', '1122633606338157'); // Substitua 'SEUPIXEL' pelo seu ID do Pixel
     fbq('track', 'Pageview');
   </script>
-
 </head>
-<body onload="redirecionar(); enviarPixel();">
+<body>
   <div class="loading-container">
     <h1>Aguarde um momento por favor...</h1>
     <div class="loading"></div>
