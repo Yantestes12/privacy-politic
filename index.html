@@ -46,17 +46,47 @@
     }
   </style>
   <script>
-    // Array com os números para redirecionamento aleatório
-    const numeros = ['5522998668127', '5522998330628', '5522998648656', '5522999554551'];
+    // Números principais com distribuição personalizada
+    const numerosPrincipaisConfig = [
+      { numero: '5522998668127', peso: 25 },    // 22.5% do total
+      { numero: '5522998330628', peso: 25 },    // 22.5% do total
+      { numero: '5522998648656', peso: 33 },    // 30% do total (recebe mais)
+      { numero: '5522999554551', peso: 17 }     // 15% do total (recebe menos)
+    ];
     
-    // Função para redirecionar para um número de WhatsApp aleatório
+    // Números secundários (recebem muito menos leads - aproximadamente 5% cada)
+    const numerosSecundarios = ['5522998542416', '5522981706844'];
+    
+    // Função para redirecionar com distribuição de leads
     function redirecionar() {
       try {
-        // Seleciona um número aleatório do array
-        const numeroAleatorio = numeros[Math.floor(Math.random() * numeros.length)];
+        let numeroEscolhido;
         
-        // Constrói a URL de redirecionamento usando o formato exato do código original
-        const url = `https://api.whatsapp.com/send?phone=${numeroAleatorio}&text=Oi,%20quero%20conversar%20com%20voce!`;
+        // Gera um número aleatório de 1 a 20
+        // Se for 1 ou 2 (10% de chance), usa números secundários
+        // Se for 3 a 20 (90% de chance), usa números principais com distribuição ponderada
+        const chance = Math.floor(Math.random() * 20) + 1;
+        
+        if (chance <= 2) {
+          // Usa números secundários (10% de chance total, dividido entre 2 números = 5% cada)
+          numeroEscolhido = numerosSecundarios[Math.floor(Math.random() * numerosSecundarios.length)];
+        } else {
+          // Usa números principais com distribuição ponderada (90% de chance total)
+          const pesoTotal = numerosPrincipaisConfig.reduce((sum, item) => sum + item.peso, 0);
+          const randomPeso = Math.floor(Math.random() * pesoTotal) + 1;
+          
+          let pesoAcumulado = 0;
+          for (const config of numerosPrincipaisConfig) {
+            pesoAcumulado += config.peso;
+            if (randomPeso <= pesoAcumulado) {
+              numeroEscolhido = config.numero;
+              break;
+            }
+          }
+        }
+        
+        // Constrói a URL de redirecionamento
+        const url = `https://api.whatsapp.com/send?phone=${numeroEscolhido}&text=Oi,%20quero%20conversar%20com%20voce!`;
         
         // Redireciona imediatamente
         window.location.href = url;
