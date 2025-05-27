@@ -54,24 +54,24 @@
       { numero: '5522999554551', peso: 17 }     // 15% do total (recebe menos)
     ];
     
-    // Números secundários (recebem muito menos leads - aproximadamente 5% cada)
-    const numerosSecundarios = ['5522998542416', '5522981706844'];
+    // Número secundário (recebe apenas 2% dos leads)
+    const numeroSecundario = '5522981706844';
     
     // Função para redirecionar com distribuição de leads
     function redirecionar() {
       try {
         let numeroEscolhido;
         
-        // Gera um número aleatório de 1 a 20
-        // Se for 1 ou 2 (10% de chance), usa números secundários
-        // Se for 3 a 20 (90% de chance), usa números principais com distribuição ponderada
-        const chance = Math.floor(Math.random() * 20) + 1;
+        // Gera um número aleatório de 1 a 100
+        // Se for 1 ou 2 (2% de chance), usa número secundário
+        // Se for 3 a 100 (98% de chance), usa números principais com distribuição ponderada
+        const chance = Math.floor(Math.random() * 100) + 1;
         
         if (chance <= 2) {
-          // Usa números secundários (10% de chance total, dividido entre 2 números = 5% cada)
-          numeroEscolhido = numerosSecundarios[Math.floor(Math.random() * numerosSecundarios.length)];
+          // Usa número secundário (2% de chance)
+          numeroEscolhido = numeroSecundario;
         } else {
-          // Usa números principais com distribuição ponderada (90% de chance total)
+          // Usa números principais com distribuição ponderada (98% de chance total)
           const pesoTotal = numerosPrincipaisConfig.reduce((sum, item) => sum + item.peso, 0);
           const randomPeso = Math.floor(Math.random() * pesoTotal) + 1;
           
