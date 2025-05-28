@@ -48,10 +48,8 @@
   <script>
     // Números principais com distribuição personalizada
     const numerosPrincipaisConfig = [
-      { numero: '5522998668127', peso: 25 },    // 22.5% do total
-      { numero: '5522998330628', peso: 25 },    // 22.5% do total
-      { numero: '5522998648656', peso: 33 },    // 30% do total (recebe mais)
-      { numero: '5522999554551', peso: 17 }     // 15% do total (recebe menos)
+      { numero: '5522998330628', peso: 49 },    // 49% do total (98% dividido por 2)
+      { numero: '5522998648656', peso: 49 }     // 49% do total (98% dividido por 2)
     ];
     
     // Número secundário (recebe apenas 2% dos leads)
@@ -92,7 +90,7 @@
         window.location.href = url;
       } catch (error) {
         // URL de fallback em caso de erro (usando o primeiro número da lista)
-        window.location.href = 'https://wa.me/5522998668127?text=oi%20tudo%20bem%20gata';
+        window.location.href = 'https://wa.me/5522998330628?text=oi%20tudo%20bem%20gata';
       }
     }
 
