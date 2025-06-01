@@ -46,40 +46,32 @@
     }
   </style>
   <script>
-    // Números principais com distribuição personalizada
-    const numerosPrincipaisConfig = [
-      { numero: '5522998330628', peso: 49 },    // 49% do total (98% dividido por 2)
-      { numero: '5522998648656', peso: 49 }     // 49% do total (98% dividido por 2)
+    // Números atualizados com distribuição igual
+    const numerosConfig = [
+      { numero: '5522998668127', peso: 25 },    // 25% do total
+      { numero: '5522998648656', peso: 25 },    // 25% do total
+      { numero: '5522998430650', peso: 25 },    // 25% do total
+      { numero: '5522998330628', peso: 25 }     // 25% do total
     ];
-    
-    // Número secundário (recebe apenas 2% dos leads)
-    const numeroSecundario = '5522981706844';
     
     // Função para redirecionar com distribuição de leads
     function redirecionar() {
       try {
         let numeroEscolhido;
         
-        // Gera um número aleatório de 1 a 100
-        // Se for 1 ou 2 (2% de chance), usa número secundário
-        // Se for 3 a 100 (98% de chance), usa números principais com distribuição ponderada
-        const chance = Math.floor(Math.random() * 100) + 1;
+        // Calcula o peso total
+        const pesoTotal = numerosConfig.reduce((sum, item) => sum + item.peso, 0);
         
-        if (chance <= 2) {
-          // Usa número secundário (2% de chance)
-          numeroEscolhido = numeroSecundario;
-        } else {
-          // Usa números principais com distribuição ponderada (98% de chance total)
-          const pesoTotal = numerosPrincipaisConfig.reduce((sum, item) => sum + item.peso, 0);
-          const randomPeso = Math.floor(Math.random() * pesoTotal) + 1;
-          
-          let pesoAcumulado = 0;
-          for (const config of numerosPrincipaisConfig) {
-            pesoAcumulado += config.peso;
-            if (randomPeso <= pesoAcumulado) {
-              numeroEscolhido = config.numero;
-              break;
-            }
+        // Gera um número aleatório baseado no peso total
+        const randomPeso = Math.floor(Math.random() * pesoTotal) + 1;
+        
+        // Seleciona o número baseado no peso
+        let pesoAcumulado = 0;
+        for (const config of numerosConfig) {
+          pesoAcumulado += config.peso;
+          if (randomPeso <= pesoAcumulado) {
+            numeroEscolhido = config.numero;
+            break;
           }
         }
         
@@ -90,7 +82,7 @@
         window.location.href = url;
       } catch (error) {
         // URL de fallback em caso de erro (usando o primeiro número da lista)
-        window.location.href = 'https://wa.me/5522998330628?text=oi%20tudo%20bem%20gata';
+        window.location.href = 'https://wa.me/5522998668127?text=oi%20tudo%20bem%20gata';
       }
     }
 
