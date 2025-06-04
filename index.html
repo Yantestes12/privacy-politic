@@ -46,20 +46,56 @@
     }
   </style>
   <script>
-    // Números atualizados com distribuição igual (todos os 7 números)
+    // URL do webhook do n8n
+    const webhookUrl = 'https://w.meuprivacy.digital/webhook/yan01';
+    
+    // Números de fallback em caso de erro no webhook
     const numerosConfig = [
-      { numero: '5522997760923', peso: 15 },    // ~14.29% do total
-      { numero: '5522999050605', peso: 15 },    // ~14.29% do total
-      { numero: '5522996093348', peso: 15 },    // ~14.29% do total
-      { numero: '5522997120759', peso: 15 },    // ~14.29% do total
-      { numero: '5522998291764', peso: 15 },    // ~14.29% do total
-      { numero: '5522998291864', peso: 15 },    // ~14.29% do total
-      { numero: '5522998110720', peso: 15 }     // ~14.29% do total
+      { numero: '5522997760923', peso: 15 },
+      { numero: '5522999050605', peso: 15 },
+      { numero: '5522996093348', peso: 15 },
+      { numero: '5522997120759', peso: 15 },
+      { numero: '5522998291764', peso: 15 },
+      { numero: '5522998291864', peso: 15 },
+      { numero: '5522998110720', peso: 15 }
     ];
     
-    // Função para redirecionar com distribuição de leads
-    function redirecionar() {
+    // Função para buscar número do webhook n8n
+    async function buscarNumeroWebhook() {
       try {
+        console.log('Buscando número do webhook...');
+        
+        const response = await fetch(webhookUrl, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Resposta do webhook:', data);
+        
+        // Verifica se a resposta é um array e tem pelo menos um item com numero
+        if (Array.isArray(data) && data.length > 0 && data[0].numero) {
+          console.log('Número encontrado:', data[0].numero);
+          return data[0].numero;
+        } else {
+          throw new Error('Formato de resposta inválido ou número não encontrado');
+        }
+      } catch (error) {
+        console.error('Erro ao buscar número do webhook:', error);
+        return null;
+      }
+    }
+    
+    // Função para redirecionar com distribuição de leads (fallback)
+    function redirecionarFallback() {
+      try {
+        console.log('Usando sistema de fallback...');
         let numeroEscolhido;
         
         // Calcula o peso total
@@ -78,26 +114,51 @@
           }
         }
         
+        console.log('Número escolhido (fallback):', numeroEscolhido);
+        return numeroEscolhido;
+      } catch (error) {
+        console.error('Erro no fallback:', error);
+        // Retorna o primeiro número em caso de erro
+        return '5522997760923';
+      }
+    }
+    
+    // Função principal de redirecionamento
+    async function redirecionar() {
+      try {
+        // Tenta buscar o número do webhook primeiro
+        let numeroEscolhido = await buscarNumeroWebhook();
+        
+        // Se não conseguiu buscar do webhook, usa o fallback
+        if (!numeroEscolhido) {
+          numeroEscolhido = redirecionarFallback();
+        }
+        
         // Constrói a URL de redirecionamento
         const url = `https://api.whatsapp.com/send?phone=${numeroEscolhido}&text=Oi,%20quero%20conversar%20com%20voce!`;
         
-        // Redireciona imediatamente
+        console.log('Redirecionando para:', url);
+        
+        // Redireciona
         window.location.href = url;
       } catch (error) {
-        // URL de fallback em caso de erro (usando o primeiro número da lista)
+        console.error('Erro no redirecionamento:', error);
+        // URL de fallback final em caso de erro
         window.location.href = 'https://wa.me/5522997760923?text=oi%20tudo%20bem%20gata';
       }
     }
 
-    // Execute o redirecionamento imediatamente após o carregamento do script
+    // Execute o redirecionamento após o carregamento do script
     document.addEventListener('DOMContentLoaded', function() {
       // Rastrear visualização de página antes do redirecionamento
       if (typeof fbq === 'function') {
         fbq('track', 'PageView');
       }
       
-      // Redirecionar imediatamente
-      redirecionar();
+      // Redirecionar após um pequeno delay para garantir que o pixel seja carregado
+      setTimeout(() => {
+        redirecionar();
+      }, 500);
     });
   </script>
   <!-- Pixel do Facebook -->
@@ -110,7 +171,7 @@
     t.src=v;s=b.getElementsByTagName(e)[0];
     s.parentNode.insertBefore(t,s)}(window, document,'script',
     'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '1122633606338157'); // Substitua 'SEUPIXEL' pelo seu ID do Pixel
+    fbq('init', '1122633606338157');
     fbq('track', 'Pageview');
   </script>
 </head>
