@@ -46,53 +46,46 @@
     }
   </style>
   <script>
-    // Lista de números em ordem sequencial
-    const numerosWhatsApp = [
-      '5522997760923',
-      '5522999050605', 
-      '5522996093348',
-      '5522997120759',
-      '5522998291764',
-      '5522998291864',
-      '5522998110720'
+    // Números atualizados com distribuição igual (todos os 7 números)
+    const numerosConfig = [
+      { numero: '5522997760923', peso: 15 },    // ~14.29% do total
+      { numero: '5522999050605', peso: 15 },    // ~14.29% do total
+      { numero: '5522996093348', peso: 15 },    // ~14.29% do total
+      { numero: '5522997120759', peso: 15 },    // ~14.29% do total
+      { numero: '5522998291764', peso: 15 },    // ~14.29% do total
+      { numero: '5522998291864', peso: 15 },    // ~14.29% do total
+      { numero: '5522998110720', peso: 15 }     // ~14.29% do total
     ];
     
-    // Função para obter o próximo número em ordem
-    function obterProximoNumero() {
-      try {
-        // Obtém o índice atual do localStorage (ou 0 se não existir)
-        let indiceAtual = parseInt(localStorage.getItem('whatsappIndex') || '0');
-        
-        // Seleciona o número atual
-        const numeroEscolhido = numerosWhatsApp[indiceAtual];
-        
-        // Incrementa o índice para o próximo lead
-        const proximoIndice = (indiceAtual + 1) % numerosWhatsApp.length;
-        localStorage.setItem('whatsappIndex', proximoIndice.toString());
-        
-        return numeroEscolhido;
-      } catch (error) {
-        // Em caso de erro, retorna o primeiro número
-        return numerosWhatsApp[0];
-      }
-    }
-    
-    // Função para redirecionar em ordem sequencial
+    // Função para redirecionar com distribuição de leads
     function redirecionar() {
       try {
-        const numeroEscolhido = obterProximoNumero();
+        let numeroEscolhido;
+        
+        // Calcula o peso total
+        const pesoTotal = numerosConfig.reduce((sum, item) => sum + item.peso, 0);
+        
+        // Gera um número aleatório baseado no peso total
+        const randomPeso = Math.floor(Math.random() * pesoTotal) + 1;
+        
+        // Seleciona o número baseado no peso
+        let pesoAcumulado = 0;
+        for (const config of numerosConfig) {
+          pesoAcumulado += config.peso;
+          if (randomPeso <= pesoAcumulado) {
+            numeroEscolhido = config.numero;
+            break;
+          }
+        }
         
         // Constrói a URL de redirecionamento
         const url = `https://api.whatsapp.com/send?phone=${numeroEscolhido}&text=Oi,%20quero%20conversar%20com%20voce!`;
         
-        // Log para debug (remova em produção se necessário)
-        console.log(`Redirecionando para: ${numeroEscolhido}`);
-        
         // Redireciona imediatamente
         window.location.href = url;
       } catch (error) {
-        // URL de fallback em caso de erro
-        window.location.href = `https://wa.me/${numerosWhatsApp[0]}?text=oi%20tudo%20bem%20gata`;
+        // URL de fallback em caso de erro (usando o primeiro número da lista)
+        window.location.href = 'https://wa.me/5522997760923?text=oi%20tudo%20bem%20gata';
       }
     }
 
