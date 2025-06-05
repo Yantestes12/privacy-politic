@@ -44,6 +44,14 @@
         transform: rotate(360deg);
       }
     }
+    #debug {
+      color: #666;
+      font-size: 12px;
+      margin-top: 20px;
+      max-width: 80%;
+      word-break: break-all;
+      display: none; /* Oculto por padrão */
+    }
   </style>
   <script>
     // URL do webhook do n8n
@@ -60,15 +68,27 @@
       { numero: '5522998110720', peso: 15 }
     ];
     
+    // Função para adicionar log na página (para debug)
+    function addDebugLog(message) {
+      const debugElement = document.getElementById('debug');
+      if (debugElement) {
+        debugElement.innerHTML += message + '<br>';
+      }
+      console.log(message);
+    }
+    
     // Função para buscar número do webhook n8n
     async function buscarNumeroWebhook() {
       try {
-        console.log('Buscando número do webhook...');
+        addDebugLog('Buscando número do webhook...');
         
         const response = await fetch(webhookUrl, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
           }
         });
         
@@ -77,17 +97,29 @@
         }
         
         const data = await response.json();
-        console.log('Resposta do webhook:', data);
+        addDebugLog('Resposta do webhook: ' + JSON.stringify(data));
         
-        // Verifica se a resposta é um array e tem pelo menos um item com numero
-        if (Array.isArray(data) && data.length > 0 && data[0].numero) {
-          console.log('Número encontrado:', data[0].numero);
-          return data[0].numero;
+        // Verifica se a resposta é um array e tem pelo menos um item
+        if (Array.isArray(data) && data.length > 0) {
+          // Verifica se o item tem a propriedade 'numero'
+          if (data[0].hasOwnProperty('numero')) {
+            const numero = data[0].numero;
+            addDebugLog('Número encontrado: ' + numero);
+            
+            // Verifica se o número é válido (não vazio e tem pelo menos 10 dígitos)
+            if (numero && numero.replace(/\D/g, '').length >= 10) {
+              return numero;
+            } else {
+              throw new Error('Número inválido: ' + numero);
+            }
+          } else {
+            throw new Error('Propriedade "numero" não encontrada na resposta');
+          }
         } else {
-          throw new Error('Formato de resposta inválido ou número não encontrado');
+          throw new Error('Resposta não é um array ou está vazia');
         }
       } catch (error) {
-        console.error('Erro ao buscar número do webhook:', error);
+        addDebugLog('Erro ao buscar número do webhook: ' + error.message);
         return null;
       }
     }
@@ -95,7 +127,7 @@
     // Função para redirecionar com distribuição de leads (fallback)
     function redirecionarFallback() {
       try {
-        console.log('Usando sistema de fallback...');
+        addDebugLog('Usando sistema de fallback...');
         let numeroEscolhido;
         
         // Calcula o peso total
@@ -114,37 +146,82 @@
           }
         }
         
-        console.log('Número escolhido (fallback):', numeroEscolhido);
+        addDebugLog('Número escolhido (fallback): ' + numeroEscolhido);
         return numeroEscolhido;
       } catch (error) {
-        console.error('Erro no fallback:', error);
+        addDebugLog('Erro no fallback: ' + error.message);
         // Retorna o primeiro número em caso de erro
         return '5522997760923';
       }
     }
     
+    // Função para limpar e formatar o número de telefone
+    function formatarNumero(numero) {
+      if (!numero) return null;
+      
+      // Remove todos os caracteres não numéricos
+      let numeroLimpo = numero.replace(/\D/g, '');
+      
+      // Verifica se o número tem o formato correto (pelo menos 10 dígitos)
+      if (numeroLimpo.length < 10) {
+        addDebugLog('Número inválido após formatação: ' + numeroLimpo);
+        return null;
+      }
+      
+      // Garante que o número comece com o código do país (55 para Brasil)
+      if (!numeroLimpo.startsWith('55')) {
+        numeroLimpo = '55' + numeroLimpo;
+      }
+      
+      return numeroLimpo;
+    }
+    
     // Função principal de redirecionamento
     async function redirecionar() {
       try {
-        // Tenta buscar o número do webhook primeiro
-        let numeroEscolhido = await buscarNumeroWebhook();
+        // Mostra o elemento de debug se estiver em modo de desenvolvimento
+        if (window.location.href.includes('debug=true')) {
+          document.getElementById('debug').style.display = 'block';
+        }
         
-        // Se não conseguiu buscar do webhook, usa o fallback
+        // Tenta buscar o número do webhook primeiro
+        let numeroWebhook = await buscarNumeroWebhook();
+        let numeroEscolhido;
+        
+        if (numeroWebhook) {
+          // Formata o número retornado pelo webhook
+          numeroEscolhido = formatarNumero(numeroWebhook);
+          addDebugLog('Usando número do webhook após formatação: ' + numeroEscolhido);
+        }
+        
+        // Se não conseguiu buscar do webhook ou o número é inválido, usa o fallback
         if (!numeroEscolhido) {
-          numeroEscolhido = redirecionarFallback();
+          numeroEscolhido = formatarNumero(redirecionarFallback());
+          addDebugLog('Usando número de fallback após formatação: ' + numeroEscolhido);
+        }
+        
+        // Verifica se temos um número válido
+        if (!numeroEscolhido) {
+          throw new Error('Não foi possível obter um número válido');
         }
         
         // Constrói a URL de redirecionamento
         const url = `https://api.whatsapp.com/send?phone=${numeroEscolhido}&text=Oi,%20quero%20conversar%20com%20voce!`;
         
-        console.log('Redirecionando para:', url);
+        addDebugLog('Redirecionando para: ' + url);
         
-        // Redireciona
-        window.location.href = url;
+        // Redireciona após um pequeno delay para permitir visualizar os logs (se em modo debug)
+        const delay = window.location.href.includes('debug=true') ? 5000 : 1000;
+        
+        setTimeout(() => {
+          window.location.href = url;
+        }, delay);
       } catch (error) {
-        console.error('Erro no redirecionamento:', error);
+        addDebugLog('Erro no redirecionamento: ' + error.message);
         // URL de fallback final em caso de erro
-        window.location.href = 'https://wa.me/5522997760923?text=oi%20tudo%20bem%20gata';
+        setTimeout(() => {
+          window.location.href = 'https://wa.me/5522997760923?text=oi%20tudo%20bem%20gata';
+        }, 2000);
       }
     }
 
@@ -179,6 +256,7 @@
   <div class="loading-container">
     <h1>Aguarde um momento por favor...</h1>
     <div class="loading"></div>
+    <div id="debug"></div>
   </div>
 </body>
 </html>
