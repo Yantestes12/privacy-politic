@@ -7,7 +7,7 @@
   <title>Redirecionando...</title>
   <style>
     body {
-      background-color: #000000; /* Fundo preto */
+      background-color: #000000;
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
@@ -25,219 +25,73 @@
     }
     h1 {
       font-size: 18px;
-      color: #FFFFFF; /* Texto branco */
+      color: #FFFFFF;
       margin-bottom: 20px;
     }
     .loading {
       animation: rotate 1s linear infinite;
-      border: 5px solid #4F4F4F; /* Cinza escuro */
-      border-top: 5px solid #00FF00; /* Parte superior em verde */
+      border: 5px solid #4F4F4F;
+      border-top: 5px solid #00FF00;
       border-radius: 50%;
       height: 50px;
       width: 50px;
     }
     @keyframes rotate {
-      0% {
-        transform: rotate(0);
-      }
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-    #debug {
-      color: #666;
-      font-size: 12px;
-      margin-top: 20px;
-      max-width: 80%;
-      word-break: break-all;
-      display: none; /* Oculto por padrão */
+      0% { transform: rotate(0); }
+      100% { transform: rotate(360deg); }
     }
   </style>
   <script>
-    // URL do webhook do n8n
     const webhookUrl = 'https://w.meuprivacy.digital/webhook/yan01';
     
-    // Números de fallback em caso de erro no webhook
-    const numerosConfig = [
-      { numero: '5522997760923', peso: 15 },
-      { numero: '5522999050605', peso: 15 },
-      { numero: '5522996093348', peso: 15 },
-      { numero: '5522997120759', peso: 15 },
-      { numero: '5522998291764', peso: 15 },
-      { numero: '5522998291864', peso: 15 },
-      { numero: '5522998110720', peso: 15 }
-    ];
-    
-    // Função para adicionar log na página (para debug)
-    function addDebugLog(message) {
-      const debugElement = document.getElementById('debug');
-      if (debugElement) {
-        debugElement.innerHTML += message + '<br>';
-      }
-      console.log(message);
-    }
-    
-    // Função para buscar número do webhook n8n
-    async function buscarNumeroWebhook() {
+    async function redirecionar() {
       try {
-        addDebugLog('Buscando número do webhook...');
-        
+        // Busca do webhook
         const response = await fetch(webhookUrl, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0'
+            'Cache-Control': 'no-cache'
           }
         });
         
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
         const data = await response.json();
-        addDebugLog('Resposta do webhook: ' + JSON.stringify(data));
+        console.log('Webhook response completa:', data);
         
-        // Verifica se a resposta é um array e tem pelo menos um item
-        if (Array.isArray(data) && data.length > 0) {
-          // Verifica se o item tem a propriedade 'numero'
-          if (data[0].hasOwnProperty('numero')) {
-            const numero = data[0].numero;
-            addDebugLog('Número encontrado: ' + numero);
-            
-            // Verifica se o número é válido (não vazio e tem pelo menos 10 dígitos)
-            if (numero && numero.replace(/\D/g, '').length >= 10) {
-              return numero;
-            } else {
-              throw new Error('Número inválido: ' + numero);
-            }
-          } else {
-            throw new Error('Propriedade "numero" não encontrada na resposta');
-          }
-        } else {
-          throw new Error('Resposta não é um array ou está vazia');
-        }
-      } catch (error) {
-        addDebugLog('Erro ao buscar número do webhook: ' + error.message);
-        return null;
-      }
-    }
-    
-    // Função para redirecionar com distribuição de leads (fallback)
-    function redirecionarFallback() {
-      try {
-        addDebugLog('Usando sistema de fallback...');
-        let numeroEscolhido;
+        // Pega o número do formato correto: data.numbers[0]
+        let numero = null;
         
-        // Calcula o peso total
-        const pesoTotal = numerosConfig.reduce((sum, item) => sum + item.peso, 0);
-        
-        // Gera um número aleatório baseado no peso total
-        const randomPeso = Math.floor(Math.random() * pesoTotal) + 1;
-        
-        // Seleciona o número baseado no peso
-        let pesoAcumulado = 0;
-        for (const config of numerosConfig) {
-          pesoAcumulado += config.peso;
-          if (randomPeso <= pesoAcumulado) {
-            numeroEscolhido = config.numero;
-            break;
-          }
+        if (data && data.numbers && Array.isArray(data.numbers) && data.numbers.length > 0) {
+          numero = data.numbers[0].toString().replace(/\D/g, '');
+          console.log('Número encontrado no webhook:', numero);
         }
         
-        addDebugLog('Número escolhido (fallback): ' + numeroEscolhido);
-        return numeroEscolhido;
-      } catch (error) {
-        addDebugLog('Erro no fallback: ' + error.message);
-        // Retorna o primeiro número em caso de erro
-        return '5522997760923';
-      }
-    }
-    
-    // Função para limpar e formatar o número de telefone
-    function formatarNumero(numero) {
-      if (!numero) return null;
-      
-      // Remove todos os caracteres não numéricos
-      let numeroLimpo = numero.replace(/\D/g, '');
-      
-      // Verifica se o número tem o formato correto (pelo menos 10 dígitos)
-      if (numeroLimpo.length < 10) {
-        addDebugLog('Número inválido após formatação: ' + numeroLimpo);
-        return null;
-      }
-      
-      // Garante que o número comece com o código do país (55 para Brasil)
-      if (!numeroLimpo.startsWith('55')) {
-        numeroLimpo = '55' + numeroLimpo;
-      }
-      
-      return numeroLimpo;
-    }
-    
-    // Função principal de redirecionamento
-    async function redirecionar() {
-      try {
-        // Mostra o elemento de debug se estiver em modo de desenvolvimento
-        if (window.location.href.includes('debug=true')) {
-          document.getElementById('debug').style.display = 'block';
-        }
-        
-        // Tenta buscar o número do webhook primeiro
-        let numeroWebhook = await buscarNumeroWebhook();
-        let numeroEscolhido;
-        
-        if (numeroWebhook) {
-          // Formata o número retornado pelo webhook
-          numeroEscolhido = formatarNumero(numeroWebhook);
-          addDebugLog('Usando número do webhook após formatação: ' + numeroEscolhido);
-        }
-        
-        // Se não conseguiu buscar do webhook ou o número é inválido, usa o fallback
-        if (!numeroEscolhido) {
-          numeroEscolhido = formatarNumero(redirecionarFallback());
-          addDebugLog('Usando número de fallback após formatação: ' + numeroEscolhido);
-        }
-        
-        // Verifica se temos um número válido
-        if (!numeroEscolhido) {
-          throw new Error('Não foi possível obter um número válido');
-        }
-        
-        // Constrói a URL de redirecionamento
-        const url = `https://api.whatsapp.com/send?phone=${numeroEscolhido}&text=Oi,%20quero%20conversar%20com%20voce!`;
-        
-        addDebugLog('Redirecionando para: ' + url);
-        
-        // Redireciona após um pequeno delay para permitir visualizar os logs (se em modo debug)
-        const delay = window.location.href.includes('debug=true') ? 5000 : 1000;
-        
-        setTimeout(() => {
+        if (numero && numero.length >= 10) {
+          console.log('Redirecionando para:', numero);
+          const url = `https://api.whatsapp.com/send?phone=${numero}&text=Oi,%20quero%20conversar%20com%20voce!`;
           window.location.href = url;
-        }, delay);
+        } else {
+          throw new Error('Número não encontrado ou inválido');
+        }
+        
       } catch (error) {
-        addDebugLog('Erro no redirecionamento: ' + error.message);
-        // URL de fallback final em caso de erro
-        setTimeout(() => {
-          window.location.href = 'https://wa.me/5522997760923?text=oi%20tudo%20bem%20gata';
-        }, 2000);
+        console.error('Erro no webhook:', error);
+        // Só em caso de erro total
+        window.location.href = 'https://wa.me/5522997760923?text=oi%20tudo%20bem%20gata';
       }
     }
 
-    // Execute o redirecionamento após o carregamento do script
     document.addEventListener('DOMContentLoaded', function() {
-      // Rastrear visualização de página antes do redirecionamento
       if (typeof fbq === 'function') {
         fbq('track', 'PageView');
       }
       
-      // Redirecionar após um pequeno delay para garantir que o pixel seja carregado
       setTimeout(() => {
         redirecionar();
       }, 500);
     });
   </script>
+  
   <!-- Pixel do Facebook -->
   <script>
     !function(f,b,e,v,n,t,s)
@@ -256,7 +110,6 @@
   <div class="loading-container">
     <h1>Aguarde um momento por favor...</h1>
     <div class="loading"></div>
-    <div id="debug"></div>
   </div>
 </body>
 </html>
